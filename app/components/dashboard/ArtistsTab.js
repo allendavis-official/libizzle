@@ -87,7 +87,8 @@ export default function ArtistsTab({
       {searchTerm && (
         <div className="text-sm text-gray-300">
           Found {sortedArtists.length} artist
-          {sortedArtists.length !== 1 ? "s" : ""} matching "{searchTerm}"
+          {sortedArtists.length !== 1 ? "s" : ""} matching &quot;{searchTerm}
+          &quot;
         </div>
       )}
 

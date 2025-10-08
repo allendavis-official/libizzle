@@ -83,7 +83,7 @@ export default function TrackSelector({
       {searchTerm && filteredTracks.length === 0 && (
         <div className="mb-4 p-4 bg-white/5 rounded-lg border border-white/10 text-center">
           <p className="text-gray-400 text-sm">
-            No tracks found matching "{searchTerm}"
+            No tracks found matching &quot;{searchTerm}&quot;
           </p>
         </div>
       )}
