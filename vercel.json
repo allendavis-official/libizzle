@@ -1,0 +1,22 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "USE_GITHUB_RAW": "true",
+    "GITHUB_REPO": "@github_repo",
+    "GITHUB_BRANCH": "main"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=3600, stale-while-revalidate"
+        }
+      ]
+    }
+  ]
+}

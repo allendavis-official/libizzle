@@ -1,103 +1,295 @@
-import Image from "next/image";
+"use client";
+import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { Music, RefreshCw } from "lucide-react";
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+// Components
+import Header from "./components/dashboard/Header";
+import NavigationTabs from "./components/dashboard/NavigationTabs";
+import OverviewTab from "./components/dashboard/OverviewTab";
+import ArtistsTab from "./components/dashboard/ArtistsTab";
+import TracksTab from "./components/dashboard/TracksTab";
+import ArtistComparisonTool from "./components/ArtistComparisonTool";
+import MarketIntelligence from "./components/MarketIntelligence";
+import PredictiveAnalytics from "./components/PredictiveAnalytics";
+import TrackComparisonTool from "./components/TrackComparisonTool";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+// Utilities
+import { calculateEngagement } from "./lib/utils";
+
+export default function LiberianPulseDashboard() {
+  const router = useRouter();
+
+  // State
+  const [artists, setArtists] = useState([]);
+  const [tracks, setTracks] = useState([]);
+  const [growthData, setGrowthData] = useState({
+    artists: [],
+    tracks: [],
+    hasGrowthData: false,
+  });
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Search state
+  const [artistSearchTerm, setArtistSearchTerm] = useState("");
+  const [trackSearchTerm, setTrackSearchTerm] = useState("");
+
+  // Sort state
+  const [sortBy, setSortBy] = useState("followers");
+  const [trackSortBy, setTrackSortBy] = useState("plays");
+  const [trackFilterBy, setTrackFilterBy] = useState("all");
+
+  // Fetch data
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // Fetch artists
+      const artistResponse = await fetch("/api/data");
+      const artistResult = await artistResponse.json();
+
+      if (artistResult.data) {
+        setArtists(artistResult.data);
+        setLastUpdated(artistResult.lastUpdated);
+      }
+
+      // Fetch tracks
+      const trackResponse = await fetch("/api/tracks");
+      const trackResult = await trackResponse.json();
+
+      if (trackResult.tracks) {
+        setTracks(trackResult.tracks);
+      }
+
+      // Fetch growth data (if available)
+      const growthResponse = await fetch("/api/growth");
+      const growthResult = await growthResponse.json();
+
+      if (growthResult.hasGrowthData) {
+        setGrowthData(growthResult);
+        if (growthResult.tracks.length > 0) {
+          setTracks(growthResult.tracks);
+        }
+        if (growthResult.artists.length > 0) {
+          setArtists(growthResult.artists);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Sorted artists with search
+  const sortedArtists = useMemo(() => {
+    if (artists.length === 0) return [];
+
+    // Apply search filter
+    let filtered = artists;
+    if (artistSearchTerm.trim()) {
+      filtered = artists.filter((a) =>
+        a.artist_name.toLowerCase().includes(artistSearchTerm.toLowerCase())
+      );
+    }
+
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      if (sortBy === "followers")
+        return parseInt(b.followers || 0) - parseInt(a.followers || 0);
+      if (sortBy === "plays")
+        return parseInt(b.total_plays || 0) - parseInt(a.total_plays || 0);
+      if (sortBy === "engagement") {
+        const engA = calculateEngagement(a.total_plays, a.followers);
+        const engB = calculateEngagement(b.total_plays, b.followers);
+        return parseFloat(engB) - parseFloat(engA);
+      }
+      return 0;
+    });
+  }, [artists, sortBy, artistSearchTerm]);
+
+  // Sorted tracks with search and filters
+  const sortedTracks = useMemo(() => {
+    if (tracks.length === 0) return [];
+
+    let filtered = [...tracks];
+
+    // Apply search filter FIRST
+    if (trackSearchTerm.trim()) {
+      filtered = filtered.filter(
+        (t) =>
+          t.track_title.toLowerCase().includes(trackSearchTerm.toLowerCase()) ||
+          t.artist_name.toLowerCase().includes(trackSearchTerm.toLowerCase())
+      );
+    }
+
+    // Apply view filters
+    if (trackFilterBy === "topPerformers") {
+      const sorted = [...tracks].sort(
+        (a, b) => parseInt(b.plays || 0) - parseInt(a.plays || 0)
+      );
+      const threshold = sorted[Math.floor(tracks.length * 0.2)];
+      if (threshold) {
+        filtered = filtered.filter(
+          (t) => parseInt(t.plays || 0) >= parseInt(threshold.plays || 0)
+        );
+      }
+    } else if (trackFilterBy === "highEngagement") {
+      filtered = filtered.filter((t) => parseFloat(t.engagement_rate || 0) > 3);
+    } else if (trackFilterBy === "recent") {
+      filtered = filtered.filter((t) => {
+        if (!t.release_date || t.release_date === "N/A") return false;
+        try {
+          const releaseDate = new Date(t.release_date);
+          const sixMonthsAgo = new Date();
+          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+          return releaseDate >= sixMonthsAgo;
+        } catch {
+          return false;
+        }
+      });
+    } else if (trackFilterBy === "viral") {
+      filtered = filtered.filter(
+        (t) =>
+          t.playlist_adds &&
+          t.playlist_adds !== "N/A" &&
+          parseInt(t.playlist_adds || 0) > 100
+      );
+    }
+
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      if (trackSortBy === "plays")
+        return parseInt(b.plays || 0) - parseInt(a.plays || 0);
+      if (trackSortBy === "likes")
+        return parseInt(b.likes || 0) - parseInt(a.likes || 0);
+      if (trackSortBy === "engagement")
+        return (
+          parseFloat(b.engagement_rate || 0) -
+          parseFloat(a.engagement_rate || 0)
+        );
+      if (trackSortBy === "hotness")
+        return (
+          parseFloat(b.hotness_score || 0) - parseFloat(a.hotness_score || 0)
+        );
+      if (trackSortBy === "playlist_adds")
+        return parseInt(b.playlist_adds || 0) - parseInt(a.playlist_adds || 0);
+      if (trackSortBy === "recent") {
+        if (
+          !a.release_date ||
+          a.release_date === "N/A" ||
+          !b.release_date ||
+          b.release_date === "N/A"
+        )
+          return 0;
+        try {
+          return new Date(b.release_date) - new Date(a.release_date);
+        } catch {
+          return 0;
+        }
+      }
+      return 0;
+    });
+  }, [tracks, trackSortBy, trackFilterBy, trackSearchTerm]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white text-center">
+          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4" />
+          <p className="text-xl">Loading Liberian Pulse...</p>
         </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (artists.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white text-center max-w-md">
+          <Music className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
+          <h2 className="text-2xl font-bold mb-2">No Data Yet</h2>
+          <p className="text-gray-300 mb-4">
+            Add your CSV files to the /data directory to see analytics.
+          </p>
+          <button
+            onClick={fetchData}
+            className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
+      <Header lastUpdated={lastUpdated} onRefresh={fetchData} />
+
+      <NavigationTabs
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        trackCount={tracks.length}
+      />
+
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {activeTab === "overview" && (
+          <OverviewTab
+            artists={artists}
+            tracks={tracks}
+            sortedArtists={sortedArtists}
+            sortedTracks={sortedTracks}
+            growthData={growthData}
+            router={router}
+          />
+        )}
+
+        {activeTab === "artists" && (
+          <ArtistsTab
+            sortedArtists={sortedArtists}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            searchTerm={artistSearchTerm}
+            setSearchTerm={setArtistSearchTerm}
+            router={router}
+          />
+        )}
+
+        {activeTab === "tracks" && (
+          <TracksTab
+            sortedTracks={sortedTracks}
+            totalTracks={tracks.length}
+            trackSortBy={trackSortBy}
+            setTrackSortBy={setTrackSortBy}
+            trackFilterBy={trackFilterBy}
+            setTrackFilterBy={setTrackFilterBy}
+            searchTerm={trackSearchTerm}
+            setSearchTerm={setTrackSearchTerm}
+            router={router}
+          />
+        )}
+
+        {activeTab === "compare" && (
+          <ArtistComparisonTool artists={artists} tracks={tracks} />
+        )}
+        {activeTab === "comparetracks" && (
+          <TrackComparisonTool tracks={tracks} />
+        )}
+
+        {activeTab === "market" && (
+          <MarketIntelligence artists={artists} tracks={tracks} />
+        )}
+
+        {activeTab === "predictions" && <PredictiveAnalytics />}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
