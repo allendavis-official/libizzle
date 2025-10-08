@@ -5,7 +5,7 @@
   "regions": ["iad1"],
   "env": {
     "USE_GITHUB_RAW": "true",
-    "GITHUB_REPO": "@github_repo",
+    "GITHUB_REPO": "allendavis-official/liberia-pulse",
     "GITHUB_BRANCH": "main"
   },
   "headers": [
