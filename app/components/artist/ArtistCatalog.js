@@ -1,4 +1,4 @@
-// components/artist/ArtistCatalog.js
+// components/artist/ArtistCatalog.js - MOBILE RESPONSIVE
 
 import {
   Play,
@@ -40,9 +40,10 @@ export default function ArtistCatalog({
       : "0.00";
 
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">
+    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white/20">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold">
           Catalog{" "}
           {sortedTracks.length !== totalTracks &&
             `(${sortedTracks.length} of ${totalTracks})`}
@@ -50,11 +51,13 @@ export default function ArtistCatalog({
 
         {/* View Filters */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">View:</span>
+          <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+            View:
+          </span>
           <select
             value={trackView}
             onChange={(e) => setTrackView(e.target.value)}
-            className="px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+            className="flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 sm:py-2 bg-white/5 border border-white/20 rounded-lg text-white text-xs sm:text-sm focus:outline-none focus:border-purple-400"
           >
             <option value="all">All Tracks</option>
             <option value="topPerformers">Top Performers</option>
@@ -64,22 +67,24 @@ export default function ArtistCatalog({
         </div>
       </div>
 
-      {/* Sorting Controls */}
-      <div className="flex flex-wrap items-center gap-2 mb-6">
-        <span className="text-sm text-gray-400">Sort by:</span>
+      {/* Sorting Controls - Horizontal Scroll */}
+      <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-2">
+        <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+          Sort by:
+        </span>
         {[
-          { value: "plays", label: "Most Plays" },
-          { value: "likes", label: "Most Likes" },
+          { value: "plays", label: "Plays" },
+          { value: "likes", label: "Likes" },
           { value: "engagement", label: "Engagement" },
-          { value: "playlist_adds", label: "Playlist Adds" },
-          { value: "recent", label: "Newest First" },
-          { value: "oldest", label: "Oldest First" },
+          { value: "playlist_adds", label: "Playlists" },
+          { value: "recent", label: "Newest" },
+          { value: "oldest", label: "Oldest" },
           { value: "title", label: "A-Z" },
         ].map((sort) => (
           <button
             key={sort.value}
             onClick={() => setTrackSortBy(sort.value)}
-            className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-colors whitespace-nowrap ${
               trackSortBy === sort.value
                 ? "bg-purple-500/30 text-white border border-purple-500"
                 : "bg-white/5 text-gray-300 hover:bg-white/10"
@@ -91,9 +96,9 @@ export default function ArtistCatalog({
       </div>
 
       {sortedTracks.length === 0 ? (
-        <div className="text-center py-12">
-          <Music className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-400">
+        <div className="text-center py-8 sm:py-12">
+          <Music className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
+          <p className="text-sm sm:text-base text-gray-400 mb-2">
             {trackView === "recent"
               ? "No tracks released in the last 6 months"
               : trackView === "topPerformers"
@@ -107,7 +112,7 @@ export default function ArtistCatalog({
               setTrackView("all");
               setTrackSortBy("plays");
             }}
-            className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors"
+            className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs sm:text-sm transition-colors"
           >
             View All Tracks
           </button>
@@ -115,30 +120,35 @@ export default function ArtistCatalog({
       ) : (
         <>
           {/* Track Stats Summary */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 p-4 bg-white/5 rounded-lg">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6 p-3 sm:p-4 bg-white/5 rounded-lg">
             <div>
               <p className="text-xs text-gray-400">Showing</p>
-              <p className="text-lg font-bold">{sortedTracks.length}</p>
+              <p className="text-base sm:text-lg font-bold">
+                {sortedTracks.length}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-400">Total Plays</p>
-              <p className="text-lg font-bold">
+              <p className="text-base sm:text-lg font-bold">
                 {formatNumber(displayedTotalPlays)}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-400">Avg Plays</p>
-              <p className="text-lg font-bold">
+              <p className="text-base sm:text-lg font-bold">
                 {formatNumber(displayedAvgPlays)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Avg Engagement</p>
-              <p className="text-lg font-bold">{displayedAvgEngagement}%</p>
+              <p className="text-xs text-gray-400">Avg Eng.</p>
+              <p className="text-base sm:text-lg font-bold">
+                {displayedAvgEngagement}%
+              </p>
             </div>
           </div>
 
-          <div className="space-y-3">
+          {/* Tracks List */}
+          <div className="space-y-2 sm:space-y-3">
             {sortedTracks.map((track, index) => {
               const isTopPerformer =
                 insights &&
@@ -150,13 +160,65 @@ export default function ArtistCatalog({
               return (
                 <div
                   key={track.track_url}
-                  className="bg-white/5 hover:bg-white/10 rounded-lg p-4 transition-all cursor-pointer"
+                  className="bg-white/5 hover:bg-white/10 rounded-lg p-3 sm:p-4 transition-all cursor-pointer"
                   onClick={() => {
                     const trackSlug = createSlug(track.track_title);
                     router.push(`/tracks/${trackSlug}`);
                   }}
                 >
-                  <div className="flex items-center justify-between">
+                  {/* Mobile Layout */}
+                  <div className="flex flex-col sm:hidden gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        #{index + 1}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-sm text-white truncate">
+                          {track.track_title}
+                        </h3>
+                      </div>
+                      <ExternalLink className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-400 ml-10">
+                      <span className="flex items-center gap-1">
+                        <Play className="w-3 h-3" />
+                        {formatNumber(track.plays)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Heart className="w-3 h-3" />
+                        {formatNumber(track.likes)}
+                      </span>
+                      <span className="flex items-center gap-1 text-green-400">
+                        <TrendingUp className="w-3 h-3" />
+                        {track.engagement_rate}%
+                      </span>
+                      {track.playlist_adds && track.playlist_adds !== "N/A" && (
+                        <span className="flex items-center gap-1">
+                          <Music className="w-3 h-3" />
+                          {formatNumber(track.playlist_adds)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Badges */}
+                    <div className="flex flex-wrap gap-1.5 ml-10">
+                      {isTopPerformer && (
+                        <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
+                          🔥 Top Hit
+                        </span>
+                      )}
+                      {isUnderperforming && (
+                        <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full">
+                          ⚡ Boost
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Desktop Layout */}
+                  <div className="hidden sm:flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1">
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0">
                         #{index + 1}
