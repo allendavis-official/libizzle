@@ -33,6 +33,17 @@ ARTISTS = [
     'https://audiomack.com/mr-church1',
     'https://audiomack.com/natif',
     'https://audiomack.com/LilMore',
+    'https://audiomack.com/writerman_willy',
+    'https://audiomack.com/kpanto_',
+    'https://audiomack.com/boifattyofficial',
+    'https://audiomack.com/buckyraw',
+    'https://audiomack.com/kobazziee',
+    'https://audiomack.com/jslughtofficial',
+    'https://audiomack.com/j-rap-',
+    'https://audiomack.com/nuchie-meek-',
+    'https://audiomack.com/KELLz',
+    'https://audiomack.com/Fazari',
+
 
     # Add more artist URLs here
 ]
