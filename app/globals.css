@@ -101,10 +101,10 @@ button,
 }
 
 /* Ensure full viewport height on mobile */
-.min-h-screen {
+/* .min-h-screen {
   min-height: 100vh;
   min-height: -webkit-fill-available;
-}
+} */
 
 /* Safe area insets for iOS notch */
 @supports (padding: env(safe-area-inset-top)) {
