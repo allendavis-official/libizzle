@@ -1,3 +1,5 @@
+// app/page.js - MOBILE RESPONSIVE MAIN DASHBOARD
+
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -200,10 +202,10 @@ export default function LiberianPulseDashboard() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4">
         <div className="text-white text-center">
-          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4" />
-          <p className="text-xl">Loading Liberian Pulse...</p>
+          <RefreshCw className="w-10 h-10 sm:w-12 sm:h-12 animate-spin mx-auto mb-4" />
+          <p className="text-lg sm:text-xl">Loading Liberian Pulse...</p>
         </div>
       </div>
     );
@@ -212,16 +214,16 @@ export default function LiberianPulseDashboard() {
   // No data state
   if (artists.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4">
         <div className="text-white text-center max-w-md">
-          <Music className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
-          <h2 className="text-2xl font-bold mb-2">No Data Yet</h2>
-          <p className="text-gray-300 mb-4">
+          <Music className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-yellow-400" />
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">No Data Yet</h2>
+          <p className="text-sm sm:text-base text-gray-300 mb-4">
             Add your CSV files to the /data directory to see analytics.
           </p>
           <button
             onClick={fetchData}
-            className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm sm:text-base"
           >
             Refresh
           </button>
@@ -240,7 +242,8 @@ export default function LiberianPulseDashboard() {
         trackCount={tracks.length}
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      {/* Main content with proper padding for mobile */}
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-8 sm:pb-12">
         {activeTab === "overview" && (
           <OverviewTab
             artists={artists}

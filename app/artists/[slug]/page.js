@@ -1,7 +1,9 @@
+// app/artists/[slug]/page.js - MOBILE RESPONSIVE
+
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Music } from "lucide-react";
+import { Music, ArrowLeft } from "lucide-react";
 
 // Components
 import ArtistHeader from "../../components/artist/ArtistHeader";
@@ -92,10 +94,10 @@ export default function ArtistDetailPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4">
         <div className="text-white text-center">
-          <Music className="w-12 h-12 animate-pulse mx-auto mb-4" />
-          <p className="text-xl">Loading artist data...</p>
+          <Music className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse mx-auto mb-4" />
+          <p className="text-lg sm:text-xl">Loading artist data...</p>
         </div>
       </div>
     );
@@ -104,17 +106,20 @@ export default function ArtistDetailPage() {
   // Not found state
   if (!artist) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-white text-center">
-          <Music className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <h2 className="text-2xl font-bold mb-2">Artist Not Found</h2>
-          <p className="text-gray-300 mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4">
+        <div className="text-white text-center max-w-md">
+          <Music className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            Artist Not Found
+          </h2>
+          <p className="text-sm sm:text-base text-gray-300 mb-4">
             Could not find artist: {artistSlug}
           </p>
           <button
             onClick={() => router.push("/")}
-            className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm sm:text-base"
           >
+            <ArrowLeft className="w-4 h-4 inline mr-2" />
             Back to Dashboard
           </button>
         </div>
@@ -126,8 +131,8 @@ export default function ArtistDetailPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
       <ArtistHeader artist={artist} onBack={() => router.push("/")} />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="space-y-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-8 sm:pb-12">
+        <div className="space-y-6 sm:space-y-8">
           {/* Key Metrics */}
           <ArtistStats artist={artist} tracks={tracks} insights={insights} />
 
