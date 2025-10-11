@@ -37,6 +37,35 @@ jobs:
           python audiomack_scraper_v5.py
           echo "Scraper completed at $(date)"
 
+      - name: 📋 Update "latest" CSV files
+        run: |
+          echo "Updating latest files..."
+
+          # Find the most recent artist file (excluding "latest")
+          LATEST_ARTIST=$(ls -t data/audiomack_artists_*.csv 2>/dev/null | grep -v latest | head -1)
+
+          # Find the most recent tracks file (excluding "latest")
+          LATEST_TRACK=$(ls -t data/audiomack_tracks_*.csv 2>/dev/null | grep -v latest | head -1)
+
+          # Copy to "latest" versions
+          if [ -n "$LATEST_ARTIST" ]; then
+            cp "$LATEST_ARTIST" data/audiomack_artists_latest.csv
+            echo "✅ Updated audiomack_artists_latest.csv from $(basename $LATEST_ARTIST)"
+          else
+            echo "⚠️  No artist files found"
+          fi
+
+          if [ -n "$LATEST_TRACK" ]; then
+            cp "$LATEST_TRACK" data/audiomack_tracks_latest.csv
+            echo "✅ Updated audiomack_tracks_latest.csv from $(basename $LATEST_TRACK)"
+          else
+            echo "⚠️  No track files found"
+          fi
+
+          # Optional: Keep only last 30 days of timestamped files to save space
+          find data -name "audiomack_*.csv" -type f -mtime +30 ! -name "*latest*" -delete 2>/dev/null || true
+          echo "🧹 Cleaned up old files (>30 days)"
+
       - name: 📊 Check if data changed
         id: check_changes
         run: |
