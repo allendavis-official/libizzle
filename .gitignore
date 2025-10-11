@@ -67,6 +67,8 @@ env/
 # ===================================
 # Keep the data directory but ignore all CSV files EXCEPT the latest ones
 data/*.csv
+!data/audiomack_artists_*.csv
+!data/audiomack_tracks_*.csv
 !data/audiomack_artists_latest.csv
 !data/audiomack_tracks_latest.csv
 
