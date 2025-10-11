@@ -140,7 +140,7 @@ jobs:
           git diff --stat --staged data/
 
           git commit -m "🤖 Auto-update data: $(date +'%Y-%m-%d %H:%M UTC')"
-          git push
+          git push -u origin main
 
           echo ""
           echo "✅ Changes pushed to GitHub!"
