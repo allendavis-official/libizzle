@@ -28,8 +28,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4 pandas playwright
 
-      - name: Install Playwright Browsers
-        run: playwright install --with-deps
+      - name: 🎭 Install Playwright browsers
+        run: |
+          playwright install --with-deps
+
+      - name: 📁 Create data directory
+        run: |
+          mkdir -p data
+          echo "✅ Data directory ready"
 
       - name: 🎵 Run Audiomack scraper
         run: |
@@ -37,44 +43,82 @@ jobs:
           python audiomack_scraper_v5.py
           echo "Scraper completed at $(date)"
 
-      - name: 📋 Update "latest" CSV files
+      - name: 📋 Move and update CSV files
         run: |
-          echo "Updating latest files..."
+          echo "=" * 60
+          echo "📋 Processing CSV files..."
+          echo "=" * 60
 
-          # Find the most recent artist file (excluding "latest")
+          # First, move any CSV files from root to data/ (in case scraper saved to root)
+          if ls audiomack_*.csv 1> /dev/null 2>&1; then
+            echo "Found CSV files in root directory, moving to data/"
+            mv audiomack_*.csv data/ 2>/dev/null || true
+          fi
+
+          # Now find the most recent files in data/
+          echo ""
+          echo "Looking for latest CSV files in data/ directory..."
+
+          # Find latest artist file (excluding "latest")
           LATEST_ARTIST=$(ls -t data/audiomack_artists_*.csv 2>/dev/null | grep -v latest | head -1)
 
-          # Find the most recent tracks file (excluding "latest")
+          # Find latest tracks file (excluding "latest")
           LATEST_TRACK=$(ls -t data/audiomack_tracks_*.csv 2>/dev/null | grep -v latest | head -1)
 
-          # Copy to "latest" versions
+          # Update artist latest file
           if [ -n "$LATEST_ARTIST" ]; then
             cp "$LATEST_ARTIST" data/audiomack_artists_latest.csv
-            echo "✅ Updated audiomack_artists_latest.csv from $(basename $LATEST_ARTIST)"
+            echo "✅ Updated audiomack_artists_latest.csv"
+            echo "   Source: $(basename $LATEST_ARTIST)"
+            echo "   Size: $(wc -c < $LATEST_ARTIST) bytes"
+            echo "   Lines: $(wc -l < $LATEST_ARTIST)"
           else
-            echo "⚠️  No artist files found"
+            echo "⚠️  No artist CSV files found in data/"
           fi
 
+          echo ""
+
+          # Update tracks latest file
           if [ -n "$LATEST_TRACK" ]; then
             cp "$LATEST_TRACK" data/audiomack_tracks_latest.csv
-            echo "✅ Updated audiomack_tracks_latest.csv from $(basename $LATEST_TRACK)"
+            echo "✅ Updated audiomack_tracks_latest.csv"
+            echo "   Source: $(basename $LATEST_TRACK)"
+            echo "   Size: $(wc -c < $LATEST_TRACK) bytes"
+            echo "   Lines: $(wc -l < $LATEST_TRACK)"
           else
-            echo "⚠️  No track files found"
+            echo "⚠️  No track CSV files found in data/"
           fi
 
-          # Optional: Keep only last 30 days of timestamped files to save space
+          echo ""
+          echo "📊 Current files in data/:"
+          ls -lh data/*.csv 2>/dev/null || echo "No CSV files found"
+
+          # Optional: Keep only last 30 days of timestamped files
+          echo ""
+          echo "🧹 Cleaning up old files (>30 days)..."
           find data -name "audiomack_*.csv" -type f -mtime +30 ! -name "*latest*" -delete 2>/dev/null || true
-          echo "🧹 Cleaned up old files (>30 days)"
+
+          echo ""
+          echo "=" * 60
 
       - name: 📊 Check if data changed
         id: check_changes
         run: |
+          echo "Checking for changes in data/ directory..."
+
           if [[ -n $(git status --porcelain data/) ]]; then
             echo "changes=true" >> $GITHUB_OUTPUT
-            echo "✅ New data detected"
+            echo ""
+            echo "✅ Changes detected:"
+            git status --short data/
           else
             echo "changes=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ No changes in data"
+            echo ""
+            echo "ℹ️  No changes in data/"
+            echo "This might mean:"
+            echo "  - Artist stats haven't changed since last run"
+            echo "  - Scraper didn't produce new files"
+            echo "  - CSV files are identical to previous version"
           fi
 
       - name: 💾 Commit and push if changed
@@ -82,21 +126,68 @@ jobs:
         run: |
           git config --global user.name 'Liberian Pulse Bot'
           git config --global user.email 'bot@liberianpulse.com'
+
+          # Add all CSV files in data/
           git add data/*.csv
+
+          # Show what's being committed
+          echo ""
+          echo "📝 Files to commit:"
+          git status --short data/
+
+          echo ""
+          echo "📊 Changes summary:"
+          git diff --stat --staged data/
+
           git commit -m "🤖 Auto-update data: $(date +'%Y-%m-%d %H:%M UTC')"
           git push
 
+          echo ""
+          echo "✅ Changes pushed to GitHub!"
+
       - name: ✅ Summary
         run: |
+          echo ""
+          echo "=" * 60
+          echo "📊 Workflow Summary"
+          echo "=" * 60
+
           if [[ "${{ steps.check_changes.outputs.changes }}" == "true" ]]; then
-            echo "✅ Data updated and pushed to repository"
+            echo "✅ SUCCESS: Data updated and pushed to repository"
+            echo ""
+            echo "Next steps:"
+            echo "  - Vercel will auto-deploy in 2-3 minutes"
+            echo "  - Check your website for updated data"
           else
-            echo "ℹ️ No updates needed - data unchanged"
+            echo "ℹ️  INFO: No updates needed"
+            echo ""
+            echo "Possible reasons:"
+            echo "  - Artist/track stats unchanged since last scrape"
+            echo "  - All data is up to date"
+            echo ""
+            echo "This is NORMAL if artists' metrics haven't changed!"
           fi
+
+          echo "=" * 60
+          echo ""
+          echo "🕐 Completed at: $(date)"
+          echo ""
 
       # Optional: Send notification on failure
       - name: 📧 Notify on failure
         if: failure()
         run: |
-          echo "❌ Scraper failed at $(date)"
-          # Add email notification or Slack webhook here
+          echo ""
+          echo "=" * 60
+          echo "❌ WORKFLOW FAILED"
+          echo "=" * 60
+          echo ""
+          echo "Check logs at:"
+          echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo ""
+          echo "Common issues:"
+          echo "  - Scraper crashed (check Python errors)"
+          echo "  - Network timeout"
+          echo "  - Audiomack website changed structure"
+          echo "  - Permission issues"
+          echo ""

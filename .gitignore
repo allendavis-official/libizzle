@@ -69,8 +69,8 @@ env/
 data/*.csv
 !data/audiomack_artists_*.csv
 !data/audiomack_tracks_*.csv
-!data/audiomack_artists_latest.csv
-!data/audiomack_tracks_latest.csv
+# !data/audiomack_artists_latest.csv
+# !data/audiomack_tracks_latest.csv
 
 # Keep .gitkeep to preserve the directory
 !data/.gitkeep
