@@ -1,9 +1,13 @@
-// app/api/data/route.js - Production-ready with multiple storage options
+// app/api/data/route.js - FIXED: Disable caching for dynamic data
 
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
+
+// 🔧 CRITICAL: Disable all caching for dynamic data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // Configuration: Choose your data source
 const USE_GITHUB_RAW = process.env.USE_GITHUB_RAW === "true";
@@ -37,14 +41,19 @@ async function fetchFromGitHub() {
   try {
     const baseUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/data/`;
 
-    // Try to fetch the latest file (you can maintain a "latest" symlink or specific filename)
+    // Try to fetch the latest file
     const filename = "audiomack_artists_latest.csv";
     const url = baseUrl + filename;
 
     console.log("Fetching from GitHub:", url);
 
+    // 🔧 CRITICAL: Add cache-busting and no-cache headers
     const response = await fetch(url, {
-      next: { revalidate: 60 }, // Cache for 1 hour
+      cache: "no-store", // Never cache
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
     });
 
     if (!response.ok) {
@@ -77,13 +86,22 @@ async function fetchFromGitHub() {
       top_tracks: row.top_tracks ? JSON.parse(row.top_tracks) : [],
     }));
 
-    return NextResponse.json({
-      data: processedData,
-      filename: filename,
-      lastUpdated: new Date().toISOString(),
-      source: "github",
-      count: processedData.length,
-    });
+    return NextResponse.json(
+      {
+        data: processedData,
+        filename: filename,
+        lastUpdated: new Date().toISOString(),
+        source: "github",
+        count: processedData.length,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
+    );
   } catch (error) {
     console.error("GitHub fetch error:", error);
     throw error;
@@ -153,13 +171,22 @@ async function fetchFromLocalFiles() {
     top_tracks: row.top_tracks ? JSON.parse(row.top_tracks) : [],
   }));
 
-  return NextResponse.json({
-    data: processedData,
-    filename: latestFile,
-    lastUpdated: fs.statSync(filePath).mtime,
-    source: "local",
-    count: processedData.length,
-  });
+  return NextResponse.json(
+    {
+      data: processedData,
+      filename: latestFile,
+      lastUpdated: fs.statSync(filePath).mtime,
+      source: "local",
+      count: processedData.length,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    }
+  );
 }
 
 // Health check endpoint

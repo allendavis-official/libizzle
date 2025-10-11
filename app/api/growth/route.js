@@ -1,7 +1,13 @@
+// app/api/growth/route.js - FIXED: Disable caching for dynamic data
+
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
+
+// 🔧 CRITICAL: Disable all caching for dynamic data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -62,13 +68,22 @@ export async function GET() {
       trackGrowthData = parsed.data;
     }
 
-    return NextResponse.json({
-      artists: artistGrowthData,
-      tracks: trackGrowthData,
-      hasGrowthData: artistFiles.length > 0 || trackFiles.length > 0,
-      artistFile: artistFiles[0] || null,
-      trackFile: trackFiles[0] || null,
-    });
+    return NextResponse.json(
+      {
+        artists: artistGrowthData,
+        tracks: trackGrowthData,
+        hasGrowthData: artistFiles.length > 0 || trackFiles.length > 0,
+        artistFile: artistFiles[0] || null,
+        trackFile: trackFiles[0] || null,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error reading growth data:", error);
     return NextResponse.json(

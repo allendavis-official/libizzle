@@ -1,9 +1,13 @@
-// app/api/tracks/route.js - Production-ready with multiple storage options
+// app/api/tracks/route.js - FIXED: Disable caching for dynamic data
 
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
+
+// 🔧 CRITICAL: Disable all caching for dynamic data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const USE_GITHUB_RAW = process.env.USE_GITHUB_RAW === "true";
 const GITHUB_REPO = process.env.GITHUB_REPO;
@@ -35,8 +39,13 @@ async function fetchFromGitHub() {
 
     console.log("Fetching tracks from GitHub:", url);
 
+    // 🔧 CRITICAL: Add cache-busting and no-cache headers
     const response = await fetch(url, {
-      next: { revalidate: 3600 },
+      cache: "no-store", // Never cache
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
     });
 
     if (!response.ok) {
@@ -66,13 +75,22 @@ async function fetchFromGitHub() {
       ),
     }));
 
-    return NextResponse.json({
-      tracks: processedTracks,
-      filename: filename,
-      lastUpdated: new Date().toISOString(),
-      source: "github",
-      totalTracks: processedTracks.length,
-    });
+    return NextResponse.json(
+      {
+        tracks: processedTracks,
+        filename: filename,
+        lastUpdated: new Date().toISOString(),
+        source: "github",
+        totalTracks: processedTracks.length,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
+    );
   } catch (error) {
     console.error("GitHub fetch error:", error);
     throw error;
@@ -128,13 +146,22 @@ async function fetchFromLocalFiles() {
     engagement_rate: calculateEngagementRate(row.plays, row.likes, row.reposts),
   }));
 
-  return NextResponse.json({
-    tracks: processedTracks,
-    filename: latestFile,
-    lastUpdated: fs.statSync(filePath).mtime,
-    source: "local",
-    totalTracks: processedTracks.length,
-  });
+  return NextResponse.json(
+    {
+      tracks: processedTracks,
+      filename: latestFile,
+      lastUpdated: fs.statSync(filePath).mtime,
+      source: "local",
+      totalTracks: processedTracks.length,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    }
+  );
 }
 
 function calculateEngagementRate(plays, likes, reposts) {
