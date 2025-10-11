@@ -14,10 +14,10 @@ import re
 # List of Liberian artists to track
 ARTISTS = [
    "https://audiomack.com/vibeking-sio",
-    # 'https://audiomack.com/nahj',
-    # 'https://audiomack.com/spizeofficial',
-    # 'https://audiomack.com/will-flash',
-    # 'https://audiomack.com/stunn',
+    'https://audiomack.com/nahj',
+    'https://audiomack.com/spizeofficial',
+    'https://audiomack.com/will-flash',
+    'https://audiomack.com/stunn',
     # 'https://audiomack.com/elvissaywon226',
     # 'https://audiomack.com/fluxiimusic',
     # 'https://audiomack.com/teddyride',
