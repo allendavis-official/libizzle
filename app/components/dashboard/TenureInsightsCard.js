@@ -1,10 +1,12 @@
-// components/dashboard/TenureInsightsCard.js
+// components/dashboard/TenureInsightsCard.js - UPDATED LABELS & MOBILE COLLAPSIBLE
 
-import { useMemo } from "react";
-import { Calendar } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { calculateTenure, formatNumber, createSlug } from "../../lib/utils";
 
 export default function TenureInsightsCard({ artists, tracks, router }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const tenureAnalysis = useMemo(() => {
     const artistsWithTenure = artists
       .map((a) => ({
@@ -40,15 +42,31 @@ export default function TenureInsightsCard({ artists, tracks, router }) {
   if (!tenureAnalysis) return null;
 
   return (
-    <div className="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 backdrop-blur-md rounded-xl p-6 border border-indigo-500/30">
-      <div className="flex items-center gap-3 mb-4">
-        <Calendar className="w-6 h-6 text-indigo-400" />
-        <h2 className="text-2xl font-bold">Platform Tenure Insights</h2>
-      </div>
+    <div className="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-indigo-500/30">
+      {/* Header - Clickable on mobile */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between mb-3 sm:mb-4 sm:cursor-default"
+      >
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-400 flex-shrink-0" />
+          <h2 className="text-xl sm:text-2xl font-bold">Artist Highlights</h2>
+        </div>
+        {/* Show chevron only on mobile */}
+        <div className="sm:hidden">
+          {isExpanded ? (
+            <ChevronUp className="w-5 h-5 text-gray-400" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-400" />
+          )}
+        </div>
+      </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Cards Grid - First item always visible on mobile, rest collapsible */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        {/* Fresh on the Scene - Always visible */}
         <div
-          className="bg-white/10 rounded-lg p-4 hover:bg-white/15 transition-all cursor-pointer"
+          className="bg-white/10 rounded-lg p-3 sm:p-4 hover:bg-white/15 transition-all cursor-pointer"
           onClick={() =>
             router.push(
               `/artists/${createSlug(tenureAnalysis.newest.artist_name)}`
@@ -56,10 +74,12 @@ export default function TenureInsightsCard({ artists, tracks, router }) {
           }
         >
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <h3 className="font-semibold text-sm">Newest Artist</h3>
+            <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+            <h3 className="font-semibold text-sm sm:text-base">
+              Fresh on the Scene
+            </h3>
           </div>
-          <p className="text-lg font-bold">
+          <p className="text-base sm:text-lg font-bold truncate">
             {tenureAnalysis.newest.artist_name}
           </p>
           <p className="text-xs text-gray-400">
@@ -70,8 +90,11 @@ export default function TenureInsightsCard({ artists, tracks, router }) {
           </p>
         </div>
 
+        {/* Collapsible items on mobile */}
         <div
-          className="bg-white/10 rounded-lg p-4 hover:bg-white/15 transition-all cursor-pointer"
+          className={`${
+            isExpanded ? "block" : "hidden"
+          } md:block bg-white/10 rounded-lg p-3 sm:p-4 hover:bg-white/15 transition-all cursor-pointer`}
           onClick={() =>
             router.push(
               `/artists/${createSlug(tenureAnalysis.oldest.artist_name)}`
@@ -79,10 +102,12 @@ export default function TenureInsightsCard({ artists, tracks, router }) {
           }
         >
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-            <h3 className="font-semibold text-sm">Platform Veteran</h3>
+            <div className="w-2 h-2 bg-orange-400 rounded-full flex-shrink-0"></div>
+            <h3 className="font-semibold text-sm sm:text-base">
+              Since Day One
+            </h3>
           </div>
-          <p className="text-lg font-bold">
+          <p className="text-base sm:text-lg font-bold truncate">
             {tenureAnalysis.oldest.artist_name}
           </p>
           <p className="text-xs text-gray-400">
@@ -95,7 +120,9 @@ export default function TenureInsightsCard({ artists, tracks, router }) {
         </div>
 
         <div
-          className="bg-white/10 rounded-lg p-4 hover:bg-white/15 transition-all cursor-pointer"
+          className={`${
+            isExpanded ? "block" : "hidden"
+          } md:block bg-white/10 rounded-lg p-3 sm:p-4 hover:bg-white/15 transition-all cursor-pointer`}
           onClick={() =>
             router.push(
               `/artists/${createSlug(tenureAnalysis.fastestGrower.artist_name)}`
@@ -103,10 +130,12 @@ export default function TenureInsightsCard({ artists, tracks, router }) {
           }
         >
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-            <h3 className="font-semibold text-sm">Fastest Grower</h3>
+            <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0"></div>
+            <h3 className="font-semibold text-sm sm:text-base">
+              Hot on the Rise
+            </h3>
           </div>
-          <p className="text-lg font-bold">
+          <p className="text-base sm:text-lg font-bold truncate">
             {tenureAnalysis.fastestGrower.artist_name}
           </p>
           <p className="text-xs text-gray-400">
@@ -118,6 +147,13 @@ export default function TenureInsightsCard({ artists, tracks, router }) {
           </p>
         </div>
       </div>
+
+      {/* Tap to expand hint - Only on mobile when collapsed */}
+      {!isExpanded && (
+        <div className="sm:hidden mt-3 text-center">
+          <p className="text-xs text-gray-400">Tap to see more</p>
+        </div>
+      )}
     </div>
   );
 }

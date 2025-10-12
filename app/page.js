@@ -1,8 +1,8 @@
-// app/page.js - MOBILE RESPONSIVE MAIN DASHBOARD
+// app/page.js - UPDATED: Handle tab query parameter for "Show All" links
 
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Music, RefreshCw } from "lucide-react";
 
 // Components
@@ -21,6 +21,7 @@ import { calculateEngagement } from "./lib/utils";
 
 export default function LiberianPulseDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // State
   const [artists, setArtists] = useState([]);
@@ -32,7 +33,10 @@ export default function LiberianPulseDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [activeTab, setActiveTab] = useState("overview");
+
+  // Get initial tab from URL query parameter
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
 
   // Search state
   const [artistSearchTerm, setArtistSearchTerm] = useState("");
@@ -42,6 +46,26 @@ export default function LiberianPulseDashboard() {
   const [sortBy, setSortBy] = useState("followers");
   const [trackSortBy, setTrackSortBy] = useState("plays");
   const [trackFilterBy, setTrackFilterBy] = useState("all");
+
+  // Update tab when URL changes
+  useEffect(() => {
+    if (tabFromUrl && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+
+  // Update URL when tab changes (optional, for bookmarkable URLs)
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    // Update URL without page reload
+    const url = new URL(window.location.href);
+    if (newTab === "overview") {
+      url.searchParams.delete("tab");
+    } else {
+      url.searchParams.set("tab", newTab);
+    }
+    window.history.pushState({}, "", url);
+  };
 
   // Fetch data
   const fetchData = async () => {
@@ -238,7 +262,7 @@ export default function LiberianPulseDashboard() {
 
       <NavigationTabs
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         trackCount={tracks.length}
       />
 

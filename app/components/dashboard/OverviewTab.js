@@ -1,4 +1,4 @@
-// components/dashboard/OverviewTab.js - MOBILE RESPONSIVE
+// components/dashboard/OverviewTab.js - COMPLETE WITH UPDATED LABELS & SHOW ALL LINKS
 
 import { useMemo } from "react";
 import {
@@ -9,6 +9,7 @@ import {
   Award,
   Flame,
   Heart,
+  ArrowRight,
 } from "lucide-react";
 import { formatNumber, calculateEngagement, createSlug } from "../../lib/utils";
 import TenureInsightsCard from "./TenureInsightsCard";
@@ -155,19 +156,26 @@ export default function OverviewTab({
         </div>
       </div>
 
-      {/* Tenure Insights */}
+      {/* Artist Highlights (formerly Tenure Insights) */}
       <TenureInsightsCard artists={artists} tracks={tracks} router={router} />
 
-      {/* Highlights - Responsive Grid */}
+      {/* Highlights - Responsive Grid - UPDATED LABELS - NOW CLICKABLE */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {topArtist && (
-          <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-yellow-500/30">
+          <div
+            onClick={() =>
+              router.push(`/artists/${createSlug(topArtist.artist_name)}`)
+            }
+            className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-yellow-500/30 cursor-pointer hover:border-yellow-500/50 hover:shadow-lg hover:shadow-yellow-500/20 transition-all"
+          >
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <Award className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 flex-shrink-0" />
-              <h3 className="text-base sm:text-lg font-semibold">Top Artist</h3>
+              <h3 className="text-base sm:text-lg font-semibold">
+                Biggest Name Right Now
+              </h3>
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold truncate">
+              <p className="text-xl sm:text-2xl font-bold truncate hover:text-yellow-300 transition-colors">
                 {topArtist.artist_name}
               </p>
               <p className="text-gray-300 text-xs sm:text-sm mt-1">
@@ -178,15 +186,20 @@ export default function OverviewTab({
         )}
 
         {hottestTrack && (
-          <div className="bg-gradient-to-br from-orange-500/20 to-red-500/20 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-orange-500/30">
+          <div
+            onClick={() =>
+              router.push(`/tracks/${createSlug(hottestTrack.track_title)}`)
+            }
+            className="bg-gradient-to-br from-orange-500/20 to-red-500/20 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-orange-500/30 cursor-pointer hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/20 transition-all"
+          >
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 flex-shrink-0" />
               <h3 className="text-base sm:text-lg font-semibold truncate">
-                Hottest Track
+                Vibe of the Moment
               </h3>
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold truncate">
+              <p className="text-xl sm:text-2xl font-bold truncate hover:text-orange-300 transition-colors">
                 {hottestTrack.track_title}
               </p>
               <p className="text-gray-300 text-xs sm:text-sm mt-1">
@@ -199,15 +212,22 @@ export default function OverviewTab({
         )}
 
         {mostEngagingTrack && (
-          <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-purple-500/30 sm:col-span-2 lg:col-span-1">
+          <div
+            onClick={() =>
+              router.push(
+                `/tracks/${createSlug(mostEngagingTrack.track_title)}`
+              )
+            }
+            className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-purple-500/30 sm:col-span-2 lg:col-span-1 cursor-pointer hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20 transition-all"
+          >
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 flex-shrink-0" />
               <h3 className="text-base sm:text-lg font-semibold">
-                Most Engaging
+                Got the Streets Talking
               </h3>
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold truncate">
+              <p className="text-xl sm:text-2xl font-bold truncate hover:text-purple-300 transition-colors">
                 {mostEngagingTrack.track_title}
               </p>
               <p className="text-gray-300 text-xs sm:text-sm mt-1">
@@ -218,13 +238,20 @@ export default function OverviewTab({
         )}
       </div>
 
-      {/* Quick Lists - Responsive Grid */}
+      {/* Quick Lists - Responsive Grid - ADDED SHOW ALL LINKS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Top 5 Artists */}
         <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white/10">
-          <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
-            Top 5 Artists
-          </h3>
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold">Top 5 Artists</h3>
+            <button
+              onClick={() => router.push("/?tab=artists")}
+              className="flex items-center gap-1 text-xs sm:text-sm text-purple-400 hover:text-purple-300 transition-colors group"
+            >
+              <span>Show All</span>
+              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          </div>
           <div className="space-y-2 sm:space-y-3">
             {sortedArtists.slice(0, 5).map((artist, index) => (
               <div
@@ -255,9 +282,16 @@ export default function OverviewTab({
 
         {/* Top 5 Tracks */}
         <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white/10">
-          <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
-            Top 5 Tracks
-          </h3>
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold">Top 5 Tracks</h3>
+            <button
+              onClick={() => router.push("/?tab=tracks")}
+              className="flex items-center gap-1 text-xs sm:text-sm text-purple-400 hover:text-purple-300 transition-colors group"
+            >
+              <span>Show All</span>
+              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          </div>
           <div className="space-y-2 sm:space-y-3">
             {sortedTracks.slice(0, 5).map((track, index) => (
               <div
