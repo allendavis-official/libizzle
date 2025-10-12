@@ -1,7 +1,7 @@
-// app/page.js - UPDATED: Handle tab query parameter for "Show All" links
+// app/page.js - FIXED: Suspense boundary for useSearchParams
 
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Music, RefreshCw } from "lucide-react";
 
@@ -19,7 +19,20 @@ import TrackComparisonTool from "./components/TrackComparisonTool";
 // Utilities
 import { calculateEngagement } from "./lib/utils";
 
-export default function LiberianPulseDashboard() {
+// Loading fallback component
+function DashboardLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4">
+      <div className="text-white text-center">
+        <RefreshCw className="w-10 h-10 sm:w-12 sm:h-12 animate-spin mx-auto mb-4" />
+        <p className="text-lg sm:text-xl">Loading Liberian Pulse...</p>
+      </div>
+    </div>
+  );
+}
+
+// Separate component that uses useSearchParams
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -52,12 +65,11 @@ export default function LiberianPulseDashboard() {
     if (tabFromUrl && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
     }
-  }, [tabFromUrl]);
+  }, [tabFromUrl, activeTab]);
 
-  // Update URL when tab changes (optional, for bookmarkable URLs)
+  // Update URL when tab changes
   const handleTabChange = (newTab) => {
     setActiveTab(newTab);
-    // Update URL without page reload
     const url = new URL(window.location.href);
     if (newTab === "overview") {
       url.searchParams.delete("tab");
@@ -71,7 +83,6 @@ export default function LiberianPulseDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch artists
       const artistResponse = await fetch("/api/data");
       const artistResult = await artistResponse.json();
 
@@ -80,7 +91,6 @@ export default function LiberianPulseDashboard() {
         setLastUpdated(artistResult.lastUpdated);
       }
 
-      // Fetch tracks
       const trackResponse = await fetch("/api/tracks");
       const trackResult = await trackResponse.json();
 
@@ -88,7 +98,6 @@ export default function LiberianPulseDashboard() {
         setTracks(trackResult.tracks);
       }
 
-      // Fetch growth data (if available)
       const growthResponse = await fetch("/api/growth");
       const growthResult = await growthResponse.json();
 
@@ -116,7 +125,6 @@ export default function LiberianPulseDashboard() {
   const sortedArtists = useMemo(() => {
     if (artists.length === 0) return [];
 
-    // Apply search filter
     let filtered = artists;
     if (artistSearchTerm.trim()) {
       filtered = artists.filter((a) =>
@@ -124,7 +132,6 @@ export default function LiberianPulseDashboard() {
       );
     }
 
-    // Apply sorting
     return filtered.sort((a, b) => {
       if (sortBy === "followers")
         return parseInt(b.followers || 0) - parseInt(a.followers || 0);
@@ -145,7 +152,6 @@ export default function LiberianPulseDashboard() {
 
     let filtered = [...tracks];
 
-    // Apply search filter FIRST
     if (trackSearchTerm.trim()) {
       filtered = filtered.filter(
         (t) =>
@@ -154,7 +160,6 @@ export default function LiberianPulseDashboard() {
       );
     }
 
-    // Apply view filters
     if (trackFilterBy === "topPerformers") {
       const sorted = [...tracks].sort(
         (a, b) => parseInt(b.plays || 0) - parseInt(a.plays || 0)
@@ -188,7 +193,6 @@ export default function LiberianPulseDashboard() {
       );
     }
 
-    // Apply sorting
     return filtered.sort((a, b) => {
       if (trackSortBy === "plays")
         return parseInt(b.plays || 0) - parseInt(a.plays || 0);
@@ -266,7 +270,6 @@ export default function LiberianPulseDashboard() {
         trackCount={tracks.length}
       />
 
-      {/* Main content with proper padding for mobile */}
       <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-8 sm:pb-12">
         {activeTab === "overview" && (
           <OverviewTab
@@ -307,6 +310,7 @@ export default function LiberianPulseDashboard() {
         {activeTab === "compare" && (
           <ArtistComparisonTool artists={artists} tracks={tracks} />
         )}
+
         {activeTab === "comparetracks" && (
           <TrackComparisonTool tracks={tracks} />
         )}
@@ -318,5 +322,14 @@ export default function LiberianPulseDashboard() {
         {activeTab === "predictions" && <PredictiveAnalytics />}
       </main>
     </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function LiberianPulseDashboard() {
+  return (
+    <Suspense fallback={<DashboardLoading />}>
+      <DashboardContent />
+    </Suspense>
   );
 }

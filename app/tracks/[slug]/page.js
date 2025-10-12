@@ -1,4 +1,4 @@
-// app/tracks/[slug]/page.js - MOBILE RESPONSIVE
+// app/tracks/[slug]/page.js - WITH COLLAPSIBLE SECTIONS & TRACK AGE
 
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
@@ -15,6 +15,8 @@ import {
   Award,
   Target,
   User,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const formatNumber = (num) => {
@@ -23,6 +25,37 @@ const formatNumber = (num) => {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
   if (n >= 1000) return (n / 1000).toFixed(1) + "K";
   return n.toString();
+};
+
+const calculateTrackAge = (releaseDate) => {
+  if (!releaseDate || releaseDate === "N/A") return null;
+
+  try {
+    const release = new Date(releaseDate);
+    const now = new Date();
+    const diffTime = Math.abs(now - release);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffMonths / 12);
+
+    let formatted = "";
+    if (diffYears > 0) {
+      formatted = `${diffYears} year${diffYears > 1 ? "s" : ""} ago`;
+    } else if (diffMonths > 0) {
+      formatted = `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+    } else if (diffDays > 7) {
+      const weeks = Math.floor(diffDays / 7);
+      formatted = `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+    } else if (diffDays > 0) {
+      formatted = `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+    } else {
+      formatted = "Today";
+    }
+
+    return { formatted, days: diffDays };
+  } catch {
+    return null;
+  }
 };
 
 export default function TrackDetailPage() {
@@ -34,6 +67,11 @@ export default function TrackDetailPage() {
   const [artistTracks, setArtistTracks] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Collapsible states
+  const [isTrackInfoExpanded, setIsTrackInfoExpanded] = useState(false);
+  const [isPerformanceExpanded, setIsPerformanceExpanded] = useState(false);
+  const [isInsightsExpanded, setIsInsightsExpanded] = useState(false);
+
   const trackSlug = params.slug;
 
   useEffect(() => {
@@ -42,18 +80,15 @@ export default function TrackDetailPage() {
 
   const fetchTrackData = async () => {
     try {
-      // Fetch all tracks
       const trackResponse = await fetch("/api/tracks");
       const trackResult = await trackResponse.json();
 
-      // Fetch all artists
       const artistResponse = await fetch("/api/data");
       const artistResult = await artistResponse.json();
 
       if (trackResult.tracks && artistResult.data) {
         setAllTracks(trackResult.tracks);
 
-        // Find track by slug
         const trackTitle = decodeURIComponent(trackSlug).replace(/-/g, " ");
         const foundTrack = trackResult.tracks.find(
           (t) =>
@@ -65,13 +100,11 @@ export default function TrackDetailPage() {
         if (foundTrack) {
           setTrack(foundTrack);
 
-          // Find the artist
           const foundArtist = artistResult.data.find(
             (a) => a.artist_name === foundTrack.artist_name
           );
           setArtist(foundArtist);
 
-          // Get all tracks by this artist
           const otherTracks = trackResult.tracks.filter(
             (t) => t.artist_name === foundTrack.artist_name
           );
@@ -85,7 +118,6 @@ export default function TrackDetailPage() {
     }
   };
 
-  // Calculate insights
   const insights = useMemo(() => {
     if (!track || !artistTracks.length) return null;
 
@@ -93,30 +125,23 @@ export default function TrackDetailPage() {
     const trackLikes = parseInt(track.likes || 0);
     const trackReposts = parseInt(track.reposts || 0);
 
-    // Calculate average for this artist
     const avgArtistPlays =
       artistTracks.reduce((sum, t) => sum + parseInt(t.plays || 0), 0) /
       artistTracks.length;
 
-    // Calculate market average
     const avgMarketPlays =
       allTracks.reduce((sum, t) => sum + parseInt(t.plays || 0), 0) /
       allTracks.length;
 
-    // Rank within artist catalog
     const sortedArtistTracks = [...artistTracks].sort(
       (a, b) => parseInt(b.plays || 0) - parseInt(a.plays || 0)
     );
     const rankInCatalog =
       sortedArtistTracks.findIndex((t) => t.track_url === track.track_url) + 1;
 
-    // Performance vs artist average
     const vsArtistAvg = ((trackPlays - avgArtistPlays) / avgArtistPlays) * 100;
-
-    // Performance vs market average
     const vsMarketAvg = ((trackPlays - avgMarketPlays) / avgMarketPlays) * 100;
 
-    // Engagement score
     const engagementScore =
       trackPlays > 0 ? ((trackLikes + trackReposts) / trackPlays) * 100 : 0;
 
@@ -166,9 +191,11 @@ export default function TrackDetailPage() {
     );
   }
 
+  const trackAge = calculateTrackAge(track.release_date);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
-      {/* Header */}
+      {/* Header with Track Age */}
       <header className="border-b border-white/10 backdrop-blur-sm bg-black/20 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-6">
           <button
@@ -203,6 +230,13 @@ export default function TrackDetailPage() {
                   <User className="w-3 h-3" />
                   {track.artist_name}
                 </button>
+                {/* Track Age */}
+                {trackAge && (
+                  <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                    <Calendar className="w-3 h-3" />
+                    Released {trackAge.formatted}
+                  </p>
+                )}
               </div>
             </div>
             <a
@@ -224,19 +258,32 @@ export default function TrackDetailPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold">{track.track_title}</h1>
-                <button
-                  onClick={() => {
-                    const artistSlug = encodeURIComponent(
-                      artist?.artist_name?.toLowerCase().replace(/\s+/g, "-") ||
-                        ""
-                    );
-                    router.push(`/artists/${artistSlug}`);
-                  }}
-                  className="text-gray-300 hover:text-white transition-colors flex items-center gap-2"
-                >
-                  <User className="w-4 h-4" />
-                  {track.artist_name}
-                </button>
+                <div className="flex items-center gap-3 mt-1">
+                  <button
+                    onClick={() => {
+                      const artistSlug = encodeURIComponent(
+                        artist?.artist_name
+                          ?.toLowerCase()
+                          .replace(/\s+/g, "-") || ""
+                      );
+                      router.push(`/artists/${artistSlug}`);
+                    }}
+                    className="text-gray-300 hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    <User className="w-4 h-4" />
+                    {track.artist_name}
+                  </button>
+                  {/* Track Age */}
+                  {trackAge && (
+                    <>
+                      <span className="text-gray-500">•</span>
+                      <p className="text-sm text-gray-400 flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        Released {trackAge.formatted}
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -254,7 +301,7 @@ export default function TrackDetailPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-8 sm:pb-12">
-        {/* Key Metrics - 2 col mobile, 4 col desktop */}
+        {/* Key Metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white/20">
             <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -312,12 +359,25 @@ export default function TrackDetailPage() {
           </div>
         </div>
 
-        {/* Track Info and Performance Score - Stack on mobile */}
+        {/* Track Info and Performance Score */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          {/* Track Information - COLLAPSIBLE */}
           <div className="md:col-span-2 bg-white/10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white/20">
-            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
-              Track Information
-            </h2>
+            <button
+              onClick={() => setIsTrackInfoExpanded(!isTrackInfoExpanded)}
+              className="w-full flex items-center justify-between mb-3 sm:mb-4 hover:opacity-80 transition-opacity"
+            >
+              <h2 className="text-lg sm:text-xl font-bold">
+                Track Information
+              </h2>
+              {isTrackInfoExpanded ? (
+                <ChevronUp className="w-5 h-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              )}
+            </button>
+
+            {/* Always show first 2 items */}
             <div className="space-y-2 sm:space-y-3">
               <div className="flex items-center justify-between py-2 border-b border-white/10">
                 <span className="text-xs sm:text-sm text-gray-400">Artist</span>
@@ -347,245 +407,300 @@ export default function TrackDetailPage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between py-2 border-b border-white/10">
-                <span className="text-xs sm:text-sm text-gray-400">
-                  Engagement Rate
-                </span>
-                <span className="font-semibold text-sm sm:text-base text-green-400">
-                  {track.engagement_rate}%
-                </span>
-              </div>
+              {/* Collapsible items */}
+              {isTrackInfoExpanded && (
+                <>
+                  <div className="flex items-center justify-between py-2 border-b border-white/10">
+                    <span className="text-xs sm:text-sm text-gray-400">
+                      Engagement Rate
+                    </span>
+                    <span className="font-semibold text-sm sm:text-base text-green-400">
+                      {track.engagement_rate}%
+                    </span>
+                  </div>
 
-              {insights && (
-                <div className="flex items-center justify-between py-2">
-                  <span className="text-xs sm:text-sm text-gray-400">
-                    Catalog Ranking
-                  </span>
-                  <span className="font-semibold text-sm sm:text-base">
-                    #{insights.rankInCatalog} of {insights.totalArtistTracks}
-                  </span>
-                </div>
+                  {insights && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-xs sm:text-sm text-gray-400">
+                        Catalog Ranking
+                      </span>
+                      <span className="font-semibold text-sm sm:text-base">
+                        #{insights.rankInCatalog} of{" "}
+                        {insights.totalArtistTracks}
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
+
+            {/* Expand hint */}
+            {!isTrackInfoExpanded && (
+              <p className="text-xs text-gray-400 mt-3 text-center">
+                Tap to see more
+              </p>
+            )}
           </div>
 
-          {/* Performance Score */}
+          {/* Performance Score - COLLAPSIBLE */}
           <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-purple-500/30">
-            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
-              Performance Score
-            </h2>
-            <div className="flex items-center justify-center mb-3 sm:mb-4">
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32">
-                <svg className="transform -rotate-90 w-24 h-24 sm:w-32 sm:h-32">
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="44"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    className="text-white/10 sm:hidden"
-                  />
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="56"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    className="text-white/10 hidden sm:block"
-                  />
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="44"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 44}`}
-                    strokeDashoffset={`${
-                      2 *
-                      Math.PI *
-                      44 *
-                      (1 - parseFloat(track.engagement_rate) / 10)
-                    }`}
-                    className="text-purple-400 sm:hidden"
-                  />
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="56"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 56}`}
-                    strokeDashoffset={`${
-                      2 *
-                      Math.PI *
-                      56 *
-                      (1 - parseFloat(track.engagement_rate) / 10)
-                    }`}
-                    className="text-purple-400 hidden sm:block"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl sm:text-3xl font-bold">
-                    {track.engagement_rate}
-                  </span>
+            <button
+              onClick={() => setIsPerformanceExpanded(!isPerformanceExpanded)}
+              className="w-full flex items-center justify-between mb-3 sm:mb-4 hover:opacity-80 transition-opacity"
+            >
+              <h2 className="text-lg sm:text-xl font-bold">
+                Performance Score
+              </h2>
+              {isPerformanceExpanded ? (
+                <ChevronUp className="w-5 h-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              )}
+            </button>
+
+            {isPerformanceExpanded ? (
+              <>
+                <div className="flex items-center justify-center mb-3 sm:mb-4">
+                  <div className="relative w-24 h-24 sm:w-32 sm:h-32">
+                    <svg className="transform -rotate-90 w-24 h-24 sm:w-32 sm:h-32">
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="44"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="none"
+                        className="text-white/10 sm:hidden"
+                      />
+                      <circle
+                        cx="64"
+                        cy="64"
+                        r="56"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="none"
+                        className="text-white/10 hidden sm:block"
+                      />
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="44"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 44}`}
+                        strokeDashoffset={`${
+                          2 *
+                          Math.PI *
+                          44 *
+                          (1 - parseFloat(track.engagement_rate) / 10)
+                        }`}
+                        className="text-purple-400 sm:hidden"
+                      />
+                      <circle
+                        cx="64"
+                        cy="64"
+                        r="56"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 56}`}
+                        strokeDashoffset={`${
+                          2 *
+                          Math.PI *
+                          56 *
+                          (1 - parseFloat(track.engagement_rate) / 10)
+                        }`}
+                        className="text-purple-400 hidden sm:block"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl sm:text-3xl font-bold">
+                        {track.engagement_rate}
+                      </span>
+                    </div>
+                  </div>
                 </div>
+                <p className="text-center text-xs sm:text-sm text-gray-300">
+                  {parseFloat(track.engagement_rate) > 5
+                    ? "🔥 Exceptional Performance"
+                    : parseFloat(track.engagement_rate) > 3
+                    ? "✅ Strong Performance"
+                    : parseFloat(track.engagement_rate) > 1
+                    ? "📈 Good Performance"
+                    : "⚡ Building Momentum"}
+                </p>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-4xl sm:text-5xl font-bold mb-2">
+                  {track.engagement_rate}%
+                </p>
+                <p className="text-xs text-gray-400">Tap to see details</p>
               </div>
-            </div>
-            <p className="text-center text-xs sm:text-sm text-gray-300">
-              {parseFloat(track.engagement_rate) > 5
-                ? "🔥 Exceptional Performance"
-                : parseFloat(track.engagement_rate) > 3
-                ? "✅ Strong Performance"
-                : parseFloat(track.engagement_rate) > 1
-                ? "📈 Good Performance"
-                : "⚡ Building Momentum"}
-            </p>
+            )}
           </div>
         </div>
 
-        {/* AI Insights */}
+        {/* AI Insights - COLLAPSIBLE */}
         {insights && (
           <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-blue-500/30 mb-6 sm:mb-8">
-            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-              <Target className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 flex-shrink-0" />
-              <h2 className="text-xl sm:text-2xl font-bold">Track Insights</h2>
-            </div>
+            <button
+              onClick={() => setIsInsightsExpanded(!isInsightsExpanded)}
+              className="w-full flex items-center justify-between mb-3 sm:mb-4 hover:opacity-80 transition-opacity"
+            >
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 flex-shrink-0" />
+                <h2 className="text-xl sm:text-2xl font-bold">
+                  Track Insights
+                </h2>
+              </div>
+              {isInsightsExpanded ? (
+                <ChevronUp className="w-5 h-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              )}
+            </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <div className="bg-white/10 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
-                  <h3 className="font-semibold text-sm sm:text-base">
-                    Artist Catalog Performance
-                  </h3>
+            {isInsightsExpanded ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                <div className="bg-white/10 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Award className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
+                    <h3 className="font-semibold text-sm sm:text-base">
+                      Artist Catalog Performance
+                    </h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-300">
+                    {insights.isTopPerformer ? (
+                      <>
+                        🏆 <strong>Top Performer!</strong> This is your{" "}
+                        <strong>#{insights.rankInCatalog}</strong> track,
+                        performing <strong>{insights.vsArtistAvg}%</strong>{" "}
+                        above your average.
+                      </>
+                    ) : insights.vsArtistAvg > 0 ? (
+                      <>
+                        ✅ Performing <strong>{insights.vsArtistAvg}%</strong>{" "}
+                        above your average. Ranked{" "}
+                        <strong>#{insights.rankInCatalog}</strong> in your
+                        catalog.
+                      </>
+                    ) : (
+                      <>
+                        📊 Ranked <strong>#{insights.rankInCatalog}</strong> of{" "}
+                        {insights.totalArtistTracks}. Currently{" "}
+                        <strong>{Math.abs(insights.vsArtistAvg)}%</strong> below
+                        your average - consider promotion.
+                      </>
+                    )}
+                  </p>
                 </div>
-                <p className="text-xs sm:text-sm text-gray-300">
-                  {insights.isTopPerformer ? (
-                    <>
-                      🏆 <strong>Top Performer!</strong> This is your{" "}
-                      <strong>#{insights.rankInCatalog}</strong> track,
-                      performing <strong>{insights.vsArtistAvg}%</strong> above
-                      your average.
-                    </>
-                  ) : insights.vsArtistAvg > 0 ? (
-                    <>
-                      ✅ Performing <strong>{insights.vsArtistAvg}%</strong>{" "}
-                      above your average. Ranked{" "}
-                      <strong>#{insights.rankInCatalog}</strong> in your
-                      catalog.
-                    </>
-                  ) : (
-                    <>
-                      📊 Ranked <strong>#{insights.rankInCatalog}</strong> of{" "}
-                      {insights.totalArtistTracks}. Currently{" "}
-                      <strong>{Math.abs(insights.vsArtistAvg)}%</strong> below
-                      your average - consider promotion.
-                    </>
-                  )}
+
+                <div className="bg-white/10 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
+                    <h3 className="font-semibold text-sm sm:text-base">
+                      Market Comparison
+                    </h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-300">
+                    {insights.vsMarketAvg > 100 ? (
+                      <>
+                        🚀 <strong>Viral Hit!</strong> Performing{" "}
+                        <strong>{insights.vsMarketAvg}%</strong> above market
+                        average. This is exceptional!
+                      </>
+                    ) : insights.vsMarketAvg > 50 ? (
+                      <>
+                        🔥 <strong>Hot Track!</strong>{" "}
+                        <strong>{insights.vsMarketAvg}%</strong> above market
+                        average. Strong commercial performance.
+                      </>
+                    ) : insights.vsMarketAvg > 0 ? (
+                      <>
+                        ✅ Above market average by{" "}
+                        <strong>{insights.vsMarketAvg}%</strong>. Solid
+                        performance.
+                      </>
+                    ) : (
+                      <>
+                        📈 Currently{" "}
+                        <strong>{Math.abs(insights.vsMarketAvg)}%</strong> below
+                        market average. Opportunity for growth with right
+                        promotion.
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                <div className="bg-white/10 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 flex-shrink-0" />
+                    <h3 className="font-semibold text-sm sm:text-base">
+                      Engagement Analysis
+                    </h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-300">
+                    {parseFloat(insights.engagementScore) > 5 ? (
+                      <>
+                        💎 <strong>Exceptional engagement</strong> at{" "}
+                        {insights.engagementScore}%. Fans are highly interactive
+                        with this track.
+                      </>
+                    ) : parseFloat(insights.engagementScore) > 3 ? (
+                      <>
+                        ✅ <strong>Strong engagement</strong> at{" "}
+                        {insights.engagementScore}%. Good fan response.
+                      </>
+                    ) : parseFloat(insights.engagementScore) > 1 ? (
+                      <>
+                        📊 Moderate engagement at {insights.engagementScore}%.
+                        Consider fan activation campaigns.
+                      </>
+                    ) : (
+                      <>
+                        ⚡ Building engagement at {insights.engagementScore}%.
+                        Focus on playlist features and social promotion.
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                <div className="bg-white/10 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Music className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 flex-shrink-0" />
+                    <h3 className="font-semibold text-sm sm:text-base">
+                      Recommendations
+                    </h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-300">
+                    {insights.isTopPerformer ? (
+                      <>
+                        🎯 Leverage this hit! Use it for playlist pitching,
+                        social ads, and as intro to new releases.
+                      </>
+                    ) : insights.vsArtistAvg > 0 ? (
+                      <>
+                        📢 Good performer - consider boosting with targeted
+                        promotion and playlist placements.
+                      </>
+                    ) : (
+                      <>
+                        🚀 Underperforming - analyze what works in your top
+                        tracks and apply those elements here.
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-gray-300 text-sm">
+                  Tap to see detailed insights about this track
                 </p>
               </div>
-
-              <div className="bg-white/10 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
-                  <h3 className="font-semibold text-sm sm:text-base">
-                    Market Comparison
-                  </h3>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-300">
-                  {insights.vsMarketAvg > 100 ? (
-                    <>
-                      🚀 <strong>Viral Hit!</strong> Performing{" "}
-                      <strong>{insights.vsMarketAvg}%</strong> above market
-                      average. This is exceptional!
-                    </>
-                  ) : insights.vsMarketAvg > 50 ? (
-                    <>
-                      🔥 <strong>Hot Track!</strong>{" "}
-                      <strong>{insights.vsMarketAvg}%</strong> above market
-                      average. Strong commercial performance.
-                    </>
-                  ) : insights.vsMarketAvg > 0 ? (
-                    <>
-                      ✅ Above market average by{" "}
-                      <strong>{insights.vsMarketAvg}%</strong>. Solid
-                      performance.
-                    </>
-                  ) : (
-                    <>
-                      📈 Currently{" "}
-                      <strong>{Math.abs(insights.vsMarketAvg)}%</strong> below
-                      market average. Opportunity for growth with right
-                      promotion.
-                    </>
-                  )}
-                </p>
-              </div>
-
-              <div className="bg-white/10 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 flex-shrink-0" />
-                  <h3 className="font-semibold text-sm sm:text-base">
-                    Engagement Analysis
-                  </h3>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-300">
-                  {parseFloat(insights.engagementScore) > 5 ? (
-                    <>
-                      💎 <strong>Exceptional engagement</strong> at{" "}
-                      {insights.engagementScore}%. Fans are highly interactive
-                      with this track.
-                    </>
-                  ) : parseFloat(insights.engagementScore) > 3 ? (
-                    <>
-                      ✅ <strong>Strong engagement</strong> at{" "}
-                      {insights.engagementScore}%. Good fan response.
-                    </>
-                  ) : parseFloat(insights.engagementScore) > 1 ? (
-                    <>
-                      📊 Moderate engagement at {insights.engagementScore}%.
-                      Consider fan activation campaigns.
-                    </>
-                  ) : (
-                    <>
-                      ⚡ Building engagement at {insights.engagementScore}%.
-                      Focus on playlist features and social promotion.
-                    </>
-                  )}
-                </p>
-              </div>
-
-              <div className="bg-white/10 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Music className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 flex-shrink-0" />
-                  <h3 className="font-semibold text-sm sm:text-base">
-                    Recommendations
-                  </h3>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-300">
-                  {insights.isTopPerformer ? (
-                    <>
-                      🎯 Leverage this hit! Use it for playlist pitching, social
-                      ads, and as intro to new releases.
-                    </>
-                  ) : insights.vsArtistAvg > 0 ? (
-                    <>
-                      📢 Good performer - consider boosting with targeted
-                      promotion and playlist placements.
-                    </>
-                  ) : (
-                    <>
-                      🚀 Underperforming - analyze what works in your top tracks
-                      and apply those elements here.
-                    </>
-                  )}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
