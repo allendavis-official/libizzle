@@ -1,4 +1,4 @@
-// app/api/tracks/route.js - FIXED: Disable caching for dynamic data
+// app/api/tracks/route.js - UPDATED FOR L-I-BIZZLE WITH ALBUM ART
 
 import { NextResponse } from "next/server";
 import fs from "fs";
@@ -58,11 +58,13 @@ async function fetchFromGitHub() {
       skipEmptyLines: true,
     });
 
+    // Process tracks - NOW WITH ALBUM ART
     const processedTracks = parsed.data.map((row) => ({
       timestamp: row.timestamp,
       artist_name: row.artist_name,
       track_title: row.track_title,
       track_url: row.track_url,
+      album_art: row.album_art || "N/A", // 🖼️ NEW FIELD
       plays: row.plays,
       likes: row.likes,
       reposts: row.reposts,
@@ -133,11 +135,13 @@ async function fetchFromLocalFiles() {
     skipEmptyLines: true,
   });
 
+  // Process tracks - NOW WITH ALBUM ART
   const processedTracks = parsed.data.map((row) => ({
     timestamp: row.timestamp,
     artist_name: row.artist_name,
     track_title: row.track_title,
     track_url: row.track_url,
+    album_art: row.album_art || "N/A", // 🖼️ NEW FIELD
     plays: row.plays,
     likes: row.likes,
     reposts: row.reposts,

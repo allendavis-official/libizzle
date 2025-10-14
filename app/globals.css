@@ -3,9 +3,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* L-I-Bizzle Brand Colors */
+  --brand-yellow: #fcd34d;
+  --brand-red: #ef4444;
+  --brand-purple: #a855f7;
+  --brand-blue: #3b82f6;
+  --brand-green: #10b981;
+  --brand-orange: #f97316;
+  --brand-pink: #ec4899;
 }
 
 @theme inline {
@@ -28,7 +38,141 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Mobile-specific optimizations */
+/* ===== L-I-BIZZLE CUSTOM UTILITIES ===== */
+
+@layer utilities {
+  /* Glassmorphism effects */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-card-light {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  /* Neon glow effects for hot content */
+  .neon-glow {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4),
+      0 0 40px rgba(168, 85, 247, 0.2);
+  }
+
+  .neon-glow-hot {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.2);
+  }
+
+  .neon-glow-gold {
+    box-shadow: 0 0 20px rgba(252, 211, 77, 0.4),
+      0 0 40px rgba(252, 211, 77, 0.2);
+  }
+
+  /* Brand gradient backgrounds */
+  .bg-brand-gradient {
+    background: linear-gradient(
+      135deg,
+      var(--brand-yellow) 0%,
+      var(--brand-red) 50%,
+      var(--brand-purple) 100%
+    );
+  }
+
+  .bg-brand-gradient-hot {
+    background: linear-gradient(
+      135deg,
+      var(--brand-orange) 0%,
+      var(--brand-red) 100%
+    );
+  }
+
+  .bg-brand-gradient-cool {
+    background: linear-gradient(
+      135deg,
+      var(--brand-blue) 0%,
+      var(--brand-purple) 100%
+    );
+  }
+
+  /* Text gradients */
+  .text-brand-gradient {
+    background: linear-gradient(
+      135deg,
+      var(--brand-yellow) 0%,
+      var(--brand-red) 50%,
+      var(--brand-purple) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animated gradient */
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  /* Card hover lift effect */
+  .card-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Scrollbar hiding */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Custom scrollbar (for desktop) */
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* ===== MOBILE-SPECIFIC OPTIMIZATIONS ===== */
+
 @media (max-width: 640px) {
   /* Improve tap targets on mobile */
   button,
@@ -36,7 +180,7 @@ body {
   select,
   input[type="button"],
   input[type="submit"] {
-    min-height: 44px; /* iOS recommendation */
+    min-height: 44px;
     min-width: 44px;
   }
 
@@ -52,6 +196,8 @@ body {
     backdrop-filter: blur(12px);
   }
 }
+
+/* ===== ANIMATIONS ===== */
 
 /* Smooth scrolling */
 html {
@@ -70,6 +216,60 @@ html {
   }
 }
 
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Pulse animation for hot content */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ===== RESPONSIVE TEXT UTILITIES ===== */
+
 /* Responsive text truncation */
 .truncate {
   overflow: hidden;
@@ -77,10 +277,30 @@ html {
   white-space: nowrap;
 }
 
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===== TOUCH-FRIENDLY INTERACTIONS ===== */
+
 /* Touch-friendly hover states */
 @media (hover: hover) {
   .hover\:bg-white\/20:hover {
     background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .hover\:scale-105:hover {
+    transform: scale(1.05);
   }
 }
 
@@ -100,16 +320,78 @@ button,
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Ensure full viewport height on mobile */
-/* .min-h-screen {
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-} */
+/* ===== SAFE AREAS FOR MOBILE ===== */
 
 /* Safe area insets for iOS notch */
 @supports (padding: env(safe-area-inset-top)) {
   body {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ===== IMAGE OPTIMIZATIONS ===== */
+
+/* Lazy loading placeholder */
+img[loading="lazy"] {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+}
+
+/* Image fade-in on load */
+@keyframes imageIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+img {
+  animation: imageIn 0.3s ease-in;
+}
+
+/* ===== CUSTOM BADGE STYLES ===== */
+
+.badge-hot {
+  background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.badge-new {
+  background: linear-gradient(135deg, var(--brand-green), var(--brand-blue));
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.badge-top {
+  background: linear-gradient(135deg, var(--brand-yellow), var(--brand-orange));
+  box-shadow: 0 2px 8px rgba(252, 211, 77, 0.3);
+}
+
+/* ===== FOCUS STATES (ACCESSIBILITY) ===== */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--brand-purple);
+  outline-offset: 2px;
+}
+
+/* ===== PRINT STYLES ===== */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
   }
 }

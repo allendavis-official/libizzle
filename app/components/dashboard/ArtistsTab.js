@@ -1,7 +1,8 @@
-// components/dashboard/ArtistsTab.js - MOBILE RESPONSIVE - COMPLETE
+// app/components/dashboard/ArtistsTab.js - WITH IMAGES
 
 import { Users, Play, BarChart3 } from "lucide-react";
 import { formatNumber, createSlug } from "../../lib/utils";
+import ArtistAvatar from "../shared/ArtistAvatar";
 
 export default function ArtistsTab({
   sortedArtists,
@@ -15,15 +16,17 @@ export default function ArtistsTab({
     <div className="space-y-4 sm:space-y-6">
       {/* Header with Sort Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <h2 className="text-lg sm:text-xl font-semibold">Artist Rankings</h2>
+        <h2 className="text-lg sm:text-xl font-semibold">
+          Biggest Names in the Game 🔥
+        </h2>
 
         {/* Sort Buttons - Stack on mobile */}
-        <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+        <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
           <button
             onClick={() => setSortBy("followers")}
             className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm transition-colors whitespace-nowrap ${
               sortBy === "followers"
-                ? "bg-white/20 text-white"
+                ? "bg-brand-gradient text-white shadow-lg"
                 : "bg-white/5 text-gray-300 hover:bg-white/10"
             }`}
           >
@@ -33,7 +36,7 @@ export default function ArtistsTab({
             onClick={() => setSortBy("plays")}
             className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm transition-colors whitespace-nowrap ${
               sortBy === "plays"
-                ? "bg-white/20 text-white"
+                ? "bg-brand-gradient text-white shadow-lg"
                 : "bg-white/5 text-gray-300 hover:bg-white/10"
             }`}
           >
@@ -90,37 +93,45 @@ export default function ArtistsTab({
       {searchTerm && (
         <div className="text-xs sm:text-sm text-gray-300">
           Found {sortedArtists.length} artist
-          {sortedArtists.length !== 1 ? "s" : ""} matching &quot;{searchTerm}
-          &quot;
+          {sortedArtists.length !== 1 ? "s" : ""} matching "{searchTerm}"
         </div>
       )}
 
-      {/* Artists List */}
+      {/* Artists List - NOW WITH IMAGES */}
       <div className="space-y-3 sm:space-y-4">
         {sortedArtists.map((artist, index) => (
           <div
             key={artist.url}
-            className="bg-white/10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white/20 hover:border-white/40 transition-all cursor-pointer"
+            className="glass-card rounded-xl p-4 sm:p-6 border border-white/20 hover:border-white/40 transition-all cursor-pointer card-lift group"
             onClick={() =>
               router.push(`/artists/${createSlug(artist.artist_name)}`)
             }
           >
             {/* Mobile Layout */}
             <div className="flex flex-col gap-3 sm:hidden">
-              {/* Rank and Name */}
+              {/* Rank, Avatar and Name */}
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-base font-bold flex-shrink-0">
+                <div className="w-10 h-10 bg-brand-gradient rounded-lg flex items-center justify-center text-base font-bold flex-shrink-0 shadow-lg">
                   #{index + 1}
                 </div>
+
+                {/* 🖼️ Artist Avatar with Image */}
+                <ArtistAvatar
+                  name={artist.artist_name}
+                  imageUrl={artist.profile_image}
+                  size="md"
+                  className="group-hover:scale-105 transition-transform"
+                />
+
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-bold truncate hover:text-purple-400 transition-colors">
+                  <h3 className="text-lg font-bold truncate group-hover:text-yellow-400 transition-colors">
                     {artist.artist_name}
                   </h3>
                 </div>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-2 gap-2 text-xs ml-13">
                 <div className="flex items-center gap-2 text-gray-300">
                   <Users className="w-3 h-3 flex-shrink-0" />
                   <span className="truncate">
@@ -142,15 +153,15 @@ export default function ArtistsTab({
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 ml-13">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     router.push(`/artists/${createSlug(artist.artist_name)}`);
                   }}
-                  className="flex-1 px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg text-xs transition-colors"
+                  className="flex-1 px-3 py-2 bg-brand-gradient hover:opacity-90 rounded-lg text-xs transition-all font-semibold shadow-lg"
                 >
-                  View Details
+                  View Profile
                 </button>
                 <a
                   href={artist.url}
@@ -165,16 +176,26 @@ export default function ArtistsTab({
             </div>
 
             {/* Desktop Layout */}
-            <div className="hidden sm:flex items-start justify-between">
-              <div className="flex items-start gap-4 flex-1">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-xl font-bold">
+            <div className="hidden sm:flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 flex-1">
+                {/* Rank */}
+                <div className="w-12 h-12 bg-brand-gradient rounded-lg flex items-center justify-center text-xl font-bold shadow-lg flex-shrink-0">
                   #{index + 1}
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-2 hover:text-purple-400 transition-colors">
+
+                {/* 🖼️ Artist Avatar with Image */}
+                <ArtistAvatar
+                  name={artist.artist_name}
+                  imageUrl={artist.profile_image}
+                  size="lg"
+                  className="group-hover:scale-105 transition-transform"
+                />
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold mb-2 group-hover:text-yellow-400 transition-colors">
                     {artist.artist_name}
                   </h3>
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-300 mb-3">
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-300">
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4" />
                       <span>{formatNumber(artist.followers)} followers</span>
@@ -195,15 +216,16 @@ export default function ArtistsTab({
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2">
+
+              <div className="flex gap-2 flex-shrink-0">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     router.push(`/artists/${createSlug(artist.artist_name)}`);
                   }}
-                  className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg text-sm transition-colors whitespace-nowrap"
+                  className="px-4 py-2 bg-brand-gradient hover:opacity-90 rounded-lg text-sm transition-all whitespace-nowrap font-semibold shadow-lg"
                 >
-                  View Details
+                  View Profile
                 </button>
                 <a
                   href={artist.url}

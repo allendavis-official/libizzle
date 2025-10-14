@@ -1,4 +1,4 @@
-// app/api/data/route.js - FIXED: Disable caching for dynamic data
+// app/api/data/route.js - UPDATED FOR L-I-BIZZLE WITH IMAGES
 
 import { NextResponse } from "next/server";
 import fs from "fs";
@@ -72,11 +72,12 @@ async function fetchFromGitHub() {
       console.warn("CSV parsing warnings:", parsed.errors);
     }
 
-    // Process data
+    // Process data - NOW WITH IMAGE SUPPORT
     const processedData = parsed.data.map((row) => ({
       timestamp: row.timestamp,
       artist_name: row.artist_name,
       url: row.url,
+      profile_image: row.profile_image || "N/A", // 🖼️ NEW FIELD
       followers: row.followers,
       total_plays: row.total_plays,
       monthly_listeners: row.monthly_listeners || row.total_plays,
@@ -158,10 +159,12 @@ async function fetchFromLocalFiles() {
     skipEmptyLines: true,
   });
 
+  // Process data - NOW WITH IMAGE SUPPORT
   const processedData = parsed.data.map((row) => ({
     timestamp: row.timestamp,
     artist_name: row.artist_name,
     url: row.url,
+    profile_image: row.profile_image || "N/A", // 🖼️ NEW FIELD
     followers: row.followers,
     total_plays: row.total_plays,
     monthly_listeners: row.monthly_listeners || row.total_plays,
