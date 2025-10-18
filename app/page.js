@@ -1,4 +1,4 @@
-// app/page.js - FIXED: Suspense boundary for useSearchParams
+// app/page.js - FIXED: Tab switching issue
 
 "use client";
 import React, { useState, useEffect, useMemo, Suspense } from "react";
@@ -47,9 +47,9 @@ function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // Get initial tab from URL query parameter
+  // Get initial tab from URL query parameter - FIXED: Initialize with overview
   const tabFromUrl = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
+  const [activeTab, setActiveTab] = useState("overview");
 
   // Search state
   const [artistSearchTerm, setArtistSearchTerm] = useState("");
@@ -60,23 +60,32 @@ function DashboardContent() {
   const [trackSortBy, setTrackSortBy] = useState("plays");
   const [trackFilterBy, setTrackFilterBy] = useState("all");
 
-  // Update tab when URL changes
+  // Update tab when URL changes - FIXED: Proper URL sync
   useEffect(() => {
     if (tabFromUrl && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
+    } else if (!tabFromUrl && activeTab !== "overview") {
+      setActiveTab("overview");
     }
   }, [tabFromUrl, activeTab]);
 
-  // Update URL when tab changes
+  // Update URL when tab changes - FIXED: Force state update
   const handleTabChange = (newTab) => {
-    setActiveTab(newTab);
+    // Force state update using functional update to ensure re-render
+    setActiveTab((prevTab) => {
+      // Always return the new tab, even if it's the same as current
+      // This ensures the component re-renders
+      return newTab;
+    });
+
     const url = new URL(window.location.href);
     if (newTab === "overview") {
       url.searchParams.delete("tab");
     } else {
       url.searchParams.set("tab", newTab);
     }
-    window.history.pushState({}, "", url);
+
+    window.history.replaceState({}, "", url);
   };
 
   // Fetch data

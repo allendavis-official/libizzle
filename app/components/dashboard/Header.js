@@ -7,61 +7,61 @@ export default function Header({ lastUpdated, onRefresh }) {
     <header className="border-b border-white/10 backdrop-blur-sm bg-black/20 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-6">
         <div className="flex items-center justify-between gap-2">
-          {/* Logo and Title - L-I-BIZZLE */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* Logo and Title - L-I-BIZZLE - Now takes full width */}
+          <div className="flex items-center gap-2 sm:gap-3 w-full">
             {/* Animated Logo */}
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-400 via-red-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0 relative overflow-hidden group">
-              <Music className="w-5 h-5 sm:w-7 sm:h-7 text-white relative z-10 group-hover:scale-110 transition-transform" />
+              <Music className="w-5 h-5 sm:w-7 sm:h-7 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
               {/* Animated shine effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </div>
 
-            <div className="min-w-0">
-              {/* Brand Name with Gradient */}
-              <h1 className="text-lg sm:text-2xl font-black bg-gradient-to-r from-yellow-400 via-red-500 to-purple-500 bg-clip-text text-transparent">
+            <div className="flex-1 min-w-0">
+              {/* Brand Name with Gradient - Full width on mobile */}
+              <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-yellow-400 via-red-500 to-purple-500 bg-clip-text text-transparent leading-tight w-full">
                 L-I-Bizzle
               </h1>
 
               {/* Tagline - Desktop */}
-              <p className="text-xs sm:text-sm text-gray-300 hidden sm:block">
+              <p className="text-xs sm:text-sm text-gray-300 hidden sm:block mt-1">
                 Where Liberian Music Pops Off 🔥
               </p>
 
               {/* Tagline - Mobile (shorter) */}
-              <p className="text-xs text-gray-400 sm:hidden">
+              <p className="text-xs text-gray-400 sm:hidden mt-0.5">
                 Liberian Music Data
               </p>
             </div>
-          </div>
 
-          {/* Right Side Actions */}
-          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-            {/* Last Updated - Hidden on very small screens */}
-            <div className="hidden md:flex items-center gap-2 text-xs sm:text-sm text-gray-300">
-              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="whitespace-nowrap">
-                {lastUpdated
-                  ? new Date(lastUpdated).toLocaleDateString()
-                  : "N/A"}
-              </span>
+            {/* Right Side Actions - Moved inside the main flex container */}
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              {/* Last Updated - Hidden on very small screens */}
+              <div className="hidden md:flex items-center gap-2 text-xs sm:text-sm text-gray-300 bg-white/5 px-3 py-2 rounded-lg">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="whitespace-nowrap">
+                  {lastUpdated
+                    ? new Date(lastUpdated).toLocaleDateString()
+                    : "N/A"}
+                </span>
+              </div>
+
+              {/* Refresh Button */}
+              <button
+                onClick={onRefresh}
+                className="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 group active:scale-95 active:bg-white/25"
+                title="Refresh data"
+                aria-label="Refresh data"
+              >
+                <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-180 transition-transform duration-500" />
+              </button>
             </div>
-
-            {/* Refresh Button */}
-            <button
-              onClick={onRefresh}
-              className="p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors group"
-              title="Refresh data"
-              aria-label="Refresh data"
-            >
-              <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-180 transition-transform duration-500" />
-            </button>
           </div>
         </div>
 
         {/* Last Updated Mobile - Below on small screens */}
-        <div className="flex md:hidden items-center gap-2 text-xs text-gray-400 mt-2">
-          <Calendar className="w-3 h-3" />
-          <span>
+        <div className="flex md:hidden items-center gap-2 text-xs text-gray-400 mt-2 bg-white/5 px-3 py-2 rounded-lg w-fit">
+          <Calendar className="w-3 h-3 flex-shrink-0" />
+          <span className="whitespace-nowrap">
             Updated:{" "}
             {lastUpdated ? new Date(lastUpdated).toLocaleDateString() : "N/A"}
           </span>
@@ -84,7 +84,7 @@ export function Logo({ size = "md", showText = true, animated = true }) {
   const { container, icon, text } = sizes[size];
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 w-full">
       {/* Logo Icon */}
       <div
         className={`${container} bg-gradient-to-br from-yellow-400 via-red-500 to-purple-500 rounded-lg flex items-center justify-center relative overflow-hidden ${
@@ -93,7 +93,9 @@ export function Logo({ size = "md", showText = true, animated = true }) {
       >
         <Music
           className={`${icon} text-white relative z-10 ${
-            animated ? "group-hover:scale-110 transition-transform" : ""
+            animated
+              ? "group-hover:scale-110 transition-transform duration-300"
+              : ""
           }`}
         />
 
@@ -105,9 +107,9 @@ export function Logo({ size = "md", showText = true, animated = true }) {
 
       {/* Logo Text */}
       {showText && (
-        <div>
+        <div className="flex-1">
           <h1
-            className={`${text} font-black bg-gradient-to-r from-yellow-400 via-red-500 to-purple-500 bg-clip-text text-transparent`}
+            className={`${text} font-black bg-gradient-to-r from-yellow-400 via-red-500 to-purple-500 bg-clip-text text-transparent w-full`}
           >
             L-I-Bizzle
           </h1>
