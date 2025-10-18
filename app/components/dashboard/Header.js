@@ -18,7 +18,7 @@ export default function Header({ lastUpdated, onRefresh }) {
 
             <div className="flex-1 min-w-0">
               {/* Brand Name with Gradient - Full width on mobile */}
-              <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-yellow-400 via-red-500 to-purple-500 bg-clip-text text-transparent leading-tight w-full">
+              <h1 className="text-[45px] sm:text-2xl font-black bg-gradient-to-r from-yellow-400 via-red-500 to-purple-500 bg-clip-text text-transparent leading-tight w-full">
                 L-I-Bizzle
               </h1>
 
