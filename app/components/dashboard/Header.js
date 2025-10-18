@@ -8,27 +8,27 @@ export default function Header({ lastUpdated, onRefresh }) {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-6">
         <div className="flex items-center justify-between gap-2">
           {/* Logo and Title - L-I-BIZZLE - Now takes full width */}
-          <div className="flex items-center gap-2 sm:gap-3 w-full">
+          <div className="flex items-center gap-3 sm:gap-3 w-full">
             {/* Animated Logo */}
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-400 via-red-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0 relative overflow-hidden group">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 via-pink-500 to-rose-400 rounded-lg flex items-center justify-center flex-shrink-0 relative overflow-hidden group">
               <Music className="w-5 h-5 sm:w-7 sm:h-7 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
               {/* Animated shine effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 flex flex-col items-center sm:items-start">
               {/* Brand Name with Gradient - Full width on mobile */}
-              <h1 className="text-[45px] sm:text-2xl font-black bg-gradient-to-r from-yellow-400 via-red-500 to-purple-500 bg-clip-text text-transparent leading-tight w-full">
+              <h1 className="text-[45px] sm:text-2xl font-black bg-gradient-to-r from-purple-600 via-pink-500 to-rose-400 bg-clip-text text-transparent leading-tight w-full text-center sm:text-left">
                 L-I-Bizzle
               </h1>
 
               {/* Tagline - Desktop */}
-              <p className="text-xs sm:text-sm text-gray-300 hidden sm:block mt-1">
+              <p className="text-lg sm:text-sm text-gray-300 hidden sm:block mt-1">
                 Where Liberian Music Pops Off 🔥
               </p>
 
               {/* Tagline - Mobile (shorter) */}
-              <p className="text-xs text-gray-400 sm:hidden mt-0.5">
+              <p className="text-lg text-gray-400 sm:hidden mt-0.5 text-center">
                 Liberian Music Data
               </p>
             </div>
@@ -36,8 +36,8 @@ export default function Header({ lastUpdated, onRefresh }) {
             {/* Right Side Actions - Moved inside the main flex container */}
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               {/* Last Updated - Hidden on very small screens */}
-              <div className="hidden md:flex items-center gap-2 text-xs sm:text-sm text-gray-300 bg-white/5 px-3 py-2 rounded-lg">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+              <div className="hidden md:flex items-center gap-2 text-sm sm:text-sm text-gray-300 bg-white/5 px-3 py-2 rounded-lg">
+                <Calendar className="w-4 h-4 sm:w-4 sm:h-4 flex-shrink-0" />
                 <span className="whitespace-nowrap">
                   {lastUpdated
                     ? new Date(lastUpdated).toLocaleDateString()
@@ -59,8 +59,8 @@ export default function Header({ lastUpdated, onRefresh }) {
         </div>
 
         {/* Last Updated Mobile - Below on small screens */}
-        <div className="flex md:hidden items-center gap-2 text-xs text-gray-400 mt-2 bg-white/5 px-3 py-2 rounded-lg w-fit">
-          <Calendar className="w-3 h-3 flex-shrink-0" />
+        <div className="flex md:hidden items-center gap-2 text-sm text-gray-400 mt-2 bg-white/5 px-3 py-2 rounded-lg w-fit mx-auto sm:mx-0">
+          <Calendar className="w-4 h-4 flex-shrink-0" />
           <span className="whitespace-nowrap">
             Updated:{" "}
             {lastUpdated ? new Date(lastUpdated).toLocaleDateString() : "N/A"}
@@ -84,10 +84,10 @@ export function Logo({ size = "md", showText = true, animated = true }) {
   const { container, icon, text } = sizes[size];
 
   return (
-    <div className="flex items-center gap-3 w-full">
+    <div className="flex items-center gap-4 w-full">
       {/* Logo Icon */}
       <div
-        className={`${container} bg-gradient-to-br from-yellow-400 via-red-500 to-purple-500 rounded-lg flex items-center justify-center relative overflow-hidden ${
+        className={`${container} bg-gradient-to-br from-purple-600 via-pink-500 to-rose-400 rounded-lg flex items-center justify-center relative overflow-hidden ${
           animated ? "group" : ""
         }`}
       >
@@ -109,7 +109,7 @@ export function Logo({ size = "md", showText = true, animated = true }) {
       {showText && (
         <div className="flex-1">
           <h1
-            className={`${text} font-black bg-gradient-to-r from-yellow-400 via-red-500 to-purple-500 bg-clip-text text-transparent w-full`}
+            className={`${text} font-black bg-gradient-to-r from-purple-600 via-pink-500 to-rose-400 bg-clip-text text-transparent w-full`}
           >
             L-I-Bizzle
           </h1>
@@ -123,7 +123,7 @@ export function Logo({ size = "md", showText = true, animated = true }) {
 
 export function BrandBadge({ variant = "default" }) {
   const variants = {
-    default: "from-yellow-400 via-red-500 to-purple-500",
+    default: "from-purple-600 via-pink-500 to-rose-400",
     hot: "from-orange-500 via-red-500 to-pink-500",
     cool: "from-blue-500 via-purple-500 to-pink-500",
     fresh: "from-green-500 via-emerald-500 to-cyan-500",
